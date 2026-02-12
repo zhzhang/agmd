@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 
 from . import __version__
+from .add_command import register_add_command
 from .init_command import register_init_command
 
 
@@ -21,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="command")
 
+    register_add_command(subparsers)
     register_init_command(subparsers)
 
     return parser
