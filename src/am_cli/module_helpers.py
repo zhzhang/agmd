@@ -1,4 +1,4 @@
-"""Helpers for downloading and rebuilding module files under `.agmd`."""
+"""Helpers for downloading and rebuilding module files under `.am`."""
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ def _fetch_json(url: str) -> object:
     request = Request(
         url,
         headers={
-            "User-Agent": "agmd-cli/0.1",
+            "User-Agent": "am-cli/0.1",
             "Accept": "application/vnd.github+json",
         },
     )
@@ -53,7 +53,7 @@ def _fetch_json(url: str) -> object:
 
 
 def _download_bytes(url: str) -> bytes:
-    request = Request(url, headers={"User-Agent": "agmd-cli/0.1"})
+    request = Request(url, headers={"User-Agent": "am-cli/0.1"})
     try:
         with urlopen(request, timeout=20) as response:  # nosec B310
             return response.read()
@@ -62,11 +62,11 @@ def _download_bytes(url: str) -> bytes:
 
 
 def download_github_module(github_path: str, destination_root: Path) -> int:
-    """Download all files at `github_path` into `<destination_root>/.agmd/...`."""
+    """Download all files at `github_path` into `<destination_root>/.am/...`."""
     owner, repo, repo_path_parts = _parse_github_path(github_path)
     module_path_in_repo = "/".join(repo_path_parts)
     module_slug = _module_slug_directory_name(github_path)
-    module_destination = destination_root / ".agmd" / module_slug
+    module_destination = destination_root / ".am" / module_slug
 
     root_prefix = module_path_in_repo.strip("/")
     pending_paths = [root_prefix]
@@ -120,11 +120,11 @@ def download_github_module(github_path: str, destination_root: Path) -> int:
 
 def rebuild_modules_for_path(path_root: Path, github_paths: list[str]) -> int:
     """
-    Rebuild `<path_root>/.agmd` from the provided module-enabled GitHub paths.
+    Rebuild `<path_root>/.am` from the provided module-enabled GitHub paths.
 
-    Existing `.agmd` content is removed first to keep generated modules in sync.
+    Existing `.am` content is removed first to keep generated modules in sync.
     """
-    modules_root = path_root / ".agmd"
+    modules_root = path_root / ".am"
     if modules_root.is_dir():
         shutil.rmtree(modules_root)
     elif modules_root.exists():

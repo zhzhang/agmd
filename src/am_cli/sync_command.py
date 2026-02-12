@@ -1,4 +1,4 @@
-"""Implementation for the `agmd sync` command."""
+"""Implementation for the `am sync` command."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def _find_project_root(start: Path) -> Path:
 def register_sync_command(subparsers: argparse._SubParsersAction) -> None:
     sync_parser = subparsers.add_parser(
         "sync",
-        help="Refresh AGENTS.md files from current agmd.yml mappings.",
+        help="Refresh AGENTS.md files from current am.yml mappings.",
     )
     sync_parser.set_defaults(handler=run_sync_command)
 
@@ -27,7 +27,7 @@ def register_sync_command(subparsers: argparse._SubParsersAction) -> None:
 def run_sync_command(args: argparse.Namespace) -> int:
     _ = args
     project_root = _find_project_root(Path.cwd())
-    config_path = project_root / "agmd.yml"
+    config_path = project_root / "am.yml"
 
     try:
         mappings = load_mappings(config_path)
@@ -44,7 +44,7 @@ def run_sync_command(args: argparse.Namespace) -> int:
                     f"Configured path '{path_key}' must be within project root '{project_root}'."
                 ) from exc
 
-            modules_root = target_dir / ".agmd"
+            modules_root = target_dir / ".am"
             had_modules_dir = modules_root.exists()
             if not module_github_paths and not had_modules_dir:
                 continue
@@ -58,7 +58,7 @@ def run_sync_command(args: argparse.Namespace) -> int:
         return 1
 
     if not refreshed_paths:
-        print("No configured paths found in agmd.yml.")
+        print("No configured paths found in am.yml.")
         return 0
 
     for refreshed in refreshed_paths:

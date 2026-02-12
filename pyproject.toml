@@ -3,21 +3,21 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agmd-cli"
+name = "am-cli"
 version = "0.1.0"
 description = "A scaffolded Python CLI tool."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [
-  { name = "AGMD Maintainers" }
+  { name = "AM Maintainers" }
 ]
 dependencies = [
   "PyYAML",
 ]
 
 [project.scripts]
-agmd = "agmd_cli.cli:main"
+am = "am_cli.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

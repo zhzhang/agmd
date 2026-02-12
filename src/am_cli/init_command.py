@@ -1,4 +1,4 @@
-"""Implementation for the `agmd init` command."""
+"""Implementation for the `am init` command."""
 
 from __future__ import annotations
 
@@ -101,7 +101,7 @@ def _confirm_move_agents() -> bool:
 def register_init_command(subparsers: argparse._SubParsersAction) -> None:
     init_parser = subparsers.add_parser(
         "init",
-        help="Create agmd.yml in the project root.",
+        help="Create am.yml in the project root.",
     )
     init_parser.add_argument(
         "-m",
@@ -116,7 +116,7 @@ def register_init_command(subparsers: argparse._SubParsersAction) -> None:
 
 def run_init_command(args: argparse.Namespace) -> int:
     project_root = _find_project_root(Path.cwd())
-    config_path = project_root / "agmd.yml"
+    config_path = project_root / "am.yml"
     if config_path.exists():
         print(f"Skipped creating existing file: {config_path}")
     else:
@@ -129,10 +129,10 @@ def run_init_command(args: argparse.Namespace) -> int:
         write_mappings(config_path, mappings)
         print(f"Created {config_path}")
     _ensure_gitignore_rule(project_root, "AGENTS.md")
-    _ensure_gitignore_rule(project_root, "**/.agmd/")
+    _ensure_gitignore_rule(project_root, "**/.am/")
     print(
         f"Updated {(project_root / '.gitignore')} to ignore AGENTS.md "
-        "and recursively ignore '.agmd' dirs"
+        "and recursively ignore '.am' dirs"
     )
     agents_paths = _find_agents_files(project_root)
     if agents_paths:

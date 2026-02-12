@@ -1,4 +1,4 @@
-"""Command-line interface for agmd."""
+"""Command-line interface for am."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .sync_command import register_sync_command
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="agmd",
+        prog="am",
         description="A scaffolded Python CLI tool.",
     )
     parser.add_argument(

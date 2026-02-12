@@ -1,4 +1,4 @@
-"""AGMD CLI package."""
+"""AM CLI package."""
 
 __all__ = ["__version__"]
 

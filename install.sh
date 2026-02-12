@@ -1,15 +1,15 @@
 #!/usr/bin/env sh
 set -eu
 
-APP_DIR="${AGMD_APP_DIR:-$HOME/.local/share/agmd-cli}"
-BIN_DIR="${AGMD_BIN_DIR:-$HOME/.local/bin}"
+APP_DIR="${AM_APP_DIR:-$HOME/.local/share/am-cli}"
+BIN_DIR="${AM_BIN_DIR:-$HOME/.local/bin}"
 VENV_DIR="${APP_DIR}/venv"
-TARGET_BIN="${BIN_DIR}/agmd"
+TARGET_BIN="${BIN_DIR}/am"
 
-REPO="${AGMD_REPO:-zhzhang/agmd}"
-REF="${AGMD_REF:-main}"
+REPO="${AM_REPO:-zhzhang/am}"
+REF="${AM_REF:-main}"
 SOURCE_URL_DEFAULT="https://github.com/${REPO}/archive/refs/heads/${REF}.tar.gz"
-SOURCE_URL="${AGMD_SOURCE_URL:-$SOURCE_URL_DEFAULT}"
+SOURCE_URL="${AM_SOURCE_URL:-$SOURCE_URL_DEFAULT}"
 
 if ! command -v python3 >/dev/null 2>&1; then
   echo "python3 is required but was not found." >&2
@@ -28,15 +28,15 @@ else
   echo "Using existing virtual environment at: ${VENV_DIR}"
 fi
 
-echo "Installing agmd-cli from source:"
+echo "Installing am-cli from source:"
 echo "  ${SOURCE_URL}"
 "${VENV_DIR}/bin/python" -m pip install --upgrade pip
 "${VENV_DIR}/bin/pip" install --upgrade "$SOURCE_URL"
 
-ln -sf "${VENV_DIR}/bin/agmd" "$TARGET_BIN"
+ln -sf "${VENV_DIR}/bin/am" "$TARGET_BIN"
 
 echo ""
-echo "Installed 'agmd' to: ${TARGET_BIN}"
+echo "Installed 'am' to: ${TARGET_BIN}"
 
 case ":$PATH:" in
   *":$BIN_DIR:"*)
@@ -50,4 +50,4 @@ case ":$PATH:" in
 esac
 
 echo ""
-echo "Try: agmd --help"
+echo "Try: am --help"

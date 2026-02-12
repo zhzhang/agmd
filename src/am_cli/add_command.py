@@ -1,4 +1,4 @@
-"""Implementation for the `agmd add` command."""
+"""Implementation for the `am add` command."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def register_add_command(subparsers: argparse._SubParsersAction) -> None:
         action="store_true",
         help=(
             "Target path is not just a single AGENTS.md but a directory of files. Download every file from the GitHub path into "
-            "<path>/.agmd/<github-path-slug>/..."
+            "<path>/.am/<github-path-slug>/..."
         ),
     )
     add_parser.set_defaults(handler=run_add_command)
@@ -59,7 +59,7 @@ def register_add_command(subparsers: argparse._SubParsersAction) -> None:
 
 def run_add_command(args: argparse.Namespace) -> int:
     project_root = _find_project_root(Path.cwd())
-    config_path = project_root / "agmd.yml"
+    config_path = project_root / "am.yml"
 
     try:
         mappings = load_mappings(config_path)
@@ -92,7 +92,7 @@ def run_add_command(args: argparse.Namespace) -> int:
     if args.module:
         print(
             f"Downloaded {downloaded_files} module file(s) to "
-            f"{(project_root / local_path_key / '.agmd').resolve()}"
+            f"{(project_root / local_path_key / '.am').resolve()}"
         )
     for refreshed in refreshed_paths:
         print(f"Refreshed {refreshed}")

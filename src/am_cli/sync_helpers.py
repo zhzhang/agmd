@@ -11,12 +11,12 @@ from urllib.request import Request, urlopen
 import yaml
 
 ROOT_AGENTS_PREAMBLE = (
-    "This project's AGENTS.md files are managed by agmd, which may pull in "
+    "This project's AGENTS.md files are managed by am, which may pull in "
     "AGENTS.md files from other sources.\n"
     "These external AGENTS.md files will be delimited by:\n"
-    "# agmd start <module_name>.\n"
+    "# am start <module_name>.\n"
     "Any files referenced by these modules will be located relative to the "
-    "AGENTS.md file at .agmd/<module_name>.\n"
+    "AGENTS.md file at .am/<module_name>.\n"
 )
 
 
@@ -50,7 +50,7 @@ def _parse_module(
 
 def load_mappings(config_path: Path) -> dict[str, list[MdEntry]]:
     if not config_path.exists():
-        raise ValueError(f"Missing config file: {config_path}. Run `agmd init` first.")
+        raise ValueError(f"Missing config file: {config_path}. Run `am init` first.")
 
     raw_data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     if raw_data is None:
@@ -115,7 +115,7 @@ def write_mappings(config_path: Path, mappings: dict[str, list[MdEntry]]) -> Non
 
 def _get_github_default_branch(owner: str, repo: str) -> str:
     url = f"https://api.github.com/repos/{owner}/{repo}"
-    request = Request(url, headers={"User-Agent": "agmd-cli/0.1"})
+    request = Request(url, headers={"User-Agent": "am-cli/0.1"})
     try:
         with urlopen(request, timeout=20) as response:  # nosec B310
             data = json.loads(response.read().decode("utf-8"))
@@ -150,7 +150,7 @@ def _github_agents_url(github_path: str) -> str:
 
 def _fetch_remote_agents(github_path: str) -> str:
     url = _github_agents_url(github_path)
-    request = Request(url, headers={"User-Agent": "agmd-cli/0.1"})
+    request = Request(url, headers={"User-Agent": "am-cli/0.1"})
     try:
         with urlopen(request, timeout=20) as response:  # nosec B310
             return response.read().decode("utf-8")
@@ -166,12 +166,12 @@ def compose_agents_document(mds: list[MdEntry], local_agents_path: Path) -> str:
         github_path = md_entry["name"]
         remote_content = _fetch_remote_agents(github_path).strip()
         if remote_content:
-            sections.append(f"# agmd start {github_path}.\n\n{remote_content}")
+            sections.append(f"# am start {github_path}.\n\n{remote_content}")
 
     if local_agents_path.exists():
         local_content = local_agents_path.read_text(encoding="utf-8").strip()
         if local_content:
-            sections.append(f"# agmd local\n\n{local_content}")
+            sections.append(f"# am local\n\n{local_content}")
 
     if not sections:
         return ""
