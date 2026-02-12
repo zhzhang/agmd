@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import TypedDict
 from urllib.error import HTTPError, URLError
@@ -112,6 +113,24 @@ def write_mappings(config_path: Path, mappings: dict[str, list[MdEntry]]) -> Non
     config_path.write_text(rendered, encoding="utf-8")
 
 
+def _get_github_default_branch(owner: str, repo: str) -> str:
+    url = f"https://api.github.com/repos/{owner}/{repo}"
+    request = Request(url, headers={"User-Agent": "agmd-cli/0.1"})
+    try:
+        with urlopen(request, timeout=20) as response:  # nosec B310
+            data = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError) as exc:
+        raise ValueError(
+            f"Failed to fetch repo info for '{owner}/{repo}'. Error: {exc}"
+        ) from exc
+    default_branch = data.get("default_branch")
+    if not default_branch:
+        raise ValueError(
+            f"Could not determine default branch for '{owner}/{repo}'"
+        )
+    return default_branch
+
+
 def _github_agents_url(github_path: str) -> str:
     cleaned = github_path.strip().rstrip("/")
     slug_parts = [part for part in cleaned.split("/") if part]
@@ -125,7 +144,8 @@ def _github_agents_url(github_path: str) -> str:
     agents_path = (
         "/".join([*relative_path, "AGENTS.md"]) if relative_path else "AGENTS.md"
     )
-    return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/main/{agents_path}"
+    default_branch = _get_github_default_branch(owner, repo)
+    return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{default_branch}/{agents_path}"
 
 
 def _fetch_remote_agents(github_path: str) -> str:

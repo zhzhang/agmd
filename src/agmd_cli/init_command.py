@@ -69,17 +69,33 @@ def _ensure_gitignore_rule(project_root: Path, rule: str) -> None:
     gitignore_path.write_text("\n".join(existing_lines) + "\n", encoding="utf-8")
 
 
-def _move_agents_files(project_root: Path) -> int:
-    moved_count = 0
+def _find_agents_files(project_root: Path) -> list[Path]:
+    return [
+        p
+        for p in project_root.rglob("AGENTS.md")
+        if ".git" not in p.parts and p.is_file()
+    ]
 
-    for agents_path in project_root.rglob("AGENTS.md"):
-        if ".git" in agents_path.parts or not agents_path.is_file():
-            continue
+
+def _move_agents_files(agents_paths: list[Path]) -> int:
+    moved_count = 0
+    for agents_path in agents_paths:
         local_path = agents_path.with_name("AGENTS.local.md")
         agents_path.replace(local_path)
         moved_count += 1
-
     return moved_count
+
+
+def _confirm_move_agents() -> bool:
+    response = (
+        input(
+            "All existing AGENTS.md files will be moved to AGENTS.local.md. "
+            "Proceed? (y/n): "
+        )
+        .strip()
+        .lower()
+    )
+    return response == "y"
 
 
 def register_init_command(subparsers: argparse._SubParsersAction) -> None:
@@ -114,10 +130,18 @@ def run_init_command(args: argparse.Namespace) -> int:
         print(f"Created {config_path}")
     _ensure_gitignore_rule(project_root, "AGENTS.md")
     _ensure_gitignore_rule(project_root, "**/.agmd/")
-    moved_count = _move_agents_files(project_root)
     print(
         f"Updated {(project_root / '.gitignore')} to ignore AGENTS.md "
         "and recursively ignore '.agmd' dirs"
     )
-    print(f"Renamed {moved_count} AGENTS.md file(s) to AGENTS.local.md")
+    agents_paths = _find_agents_files(project_root)
+    if agents_paths:
+        print(
+            f"\nFound {len(agents_paths)} AGENTS.md file(s) that will be moved to AGENTS.local.md"
+        )
+        if not _confirm_move_agents():
+            print("Skipped moving AGENTS.md files.")
+        else:
+            _move_agents_files(agents_paths)
+            print(f"Renamed {len(agents_paths)} AGENTS.md file(s) to AGENTS.local.md")
     return 0

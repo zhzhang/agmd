@@ -1,70 +1,67 @@
-# agmd-cli
+# agmd
 
-A scaffolded Python CLI tool with a Unix-friendly installer script.
+**agmd** manages `AGENTS.md` files for your project. It pulls agent instructions from GitHub repositories—shared skills, best practices, project conventions—and composes them into a single `AGENTS.md` alongside your local rules, which are given in `AGENTS.local.md` instead.
 
-## Prerequisites
+This allows you to easily maintain a set of local rules specific to your project, while also keeping up to date to externally written `AGENTS.md`s, i.e. those written by the providers of frameworks you are using in your project.
 
-- `python3` available on your system
+---
 
-## Install
+## Quickstart
+
+### 1. Install agmd
 
 From the project root:
 
 ```bash
-chmod +x install.sh
-./install.sh
+curl -sSL https://raw.githubusercontent.com/zhzhang/agmd/refs/heads/main/install.sh | sh
 ```
 
-By default, the installer:
+### 2. Initialize your project
 
-- creates a virtual environment at `~/.local/share/agmd-cli/venv`
-- installs this package into that virtual environment
-- symlinks the executable to `~/.local/bin/agmd`
-
-You can customize install locations:
+In a your project directory:
 
 ```bash
-AGMD_APP_DIR="$HOME/.local/share/my-agmd" \
-AGMD_BIN_DIR="$HOME/.local/bin" \
-./install.sh
+agmd init
 ```
 
-## Usage
+This will:
+
+- Create `agmd.yml` in the project root, a manifest for externally sourced `AGENTS.md` similar to `package.json` or `pyproject.toml`
+- Add entries to `.gitignore` for `AGENTS.md` and `**/.agmd/`
+- If you have existing `AGENTS.md` files, rename them to `AGENTS.local.md`
+
+### 3. Add a remote source
+
+Pull in an `AGENTS.md` from a GitHub repo:
 
 ```bash
-agmd --help
-agmd init  # creates agmd.yml
-agmd init --map ".=owner/repo" --map "src=owner/repo/tree/main/src"
+agmd add owner/repo/path/containing/target
+```
+
+To target the `AGENTS.md` at specific path in your project:
+
+```bash
 agmd add owner/repo --path src
+```
+
+Some `AGENTS.md` such as [Supabase's](https://github.com/supabase/agent-skills/blob/main/skills/supabase-postgres-best-practices/AGENTS.md) refer to dependency files that add additional information.
+
+```bash
+agmd add owner/repo/tree/main/skills/my-skill --module
+```
+
+This downloads all files from that path into `.agmd/<module-name>/` so they can be referenced from the materialized `AGENTS.md`.
+
+### 4. Sync
+
+After adding sources or changing `agmd.yml`, refresh the composed files:
+
+```bash
 agmd sync
 ```
 
-`agmd init` also ensures `.gitignore` ignores `AGENTS.md` and `**/.agmd/`,
-then renames any existing `AGENTS.md` files in the project to
-`AGENTS.local.md`.
-If `agmd.yml` already exists, it is left unchanged.
+`agmd` fetches the latest remote content, merges it with any `AGENTS.local.md`, and writes the result to `AGENTS.md`.
 
-`agmd.yml` uses a list format:
 
-```yaml
-- path: "."
-  mds:
-    - name: "owner/repo"
-      module: false
-- path: "src"
-  mds:
-    - name: "owner/repo/tree/main/src"
-      module: true
-```
+## How it works
 
-## Development
-
-Create and activate a local virtual environment, then install in editable mode:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -e .
-agmd init --map ".=owner/repo"
-```
