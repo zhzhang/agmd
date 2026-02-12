@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import TypedDict
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 import yaml
@@ -131,6 +132,57 @@ def _get_github_default_branch(owner: str, repo: str) -> str:
     return default_branch
 
 
+def _resolve_agents_relative_path(
+    owner: str, repo: str, default_branch: str, relative_path: list[str]
+) -> str:
+    base_path = "/".join(relative_path).strip("/")
+    encoded = quote(base_path, safe="/")
+    if encoded:
+        url = (
+            f"https://api.github.com/repos/{owner}/{repo}/contents/"
+            f"{encoded}?ref={default_branch}"
+        )
+    else:
+        url = f"https://api.github.com/repos/{owner}/{repo}/contents?ref={default_branch}"
+
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "am-cli/0.1",
+            "Accept": "application/vnd.github+json",
+        },
+    )
+    try:
+        with urlopen(request, timeout=20) as response:  # nosec B310
+            payload = json.loads(response.read().decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise ValueError(
+            f"Failed to list files for '{owner}/{repo}/{base_path}' at {url}. Error: {exc}"
+        ) from exc
+
+    entries = payload if isinstance(payload, list) else [payload]
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        entry_type = entry.get("type")
+        entry_name = entry.get("name")
+        entry_path = entry.get("path")
+        if (
+            entry_type == "file"
+            and isinstance(entry_name, str)
+            and entry_name.lower() == "agents.md"
+            and isinstance(entry_path, str)
+            and entry_path
+        ):
+            return entry_path
+
+    target_display = base_path or "."
+    raise ValueError(
+        f"Could not find AGENTS.md in '{owner}/{repo}/{target_display}' "
+        "(case-insensitive filename match)."
+    )
+
+
 def _github_agents_url(github_path: str) -> str:
     cleaned = github_path.strip().rstrip("/")
     slug_parts = [part for part in cleaned.split("/") if part]
@@ -141,10 +193,13 @@ def _github_agents_url(github_path: str) -> str:
 
     owner, repo = slug_parts[0], slug_parts[1]
     relative_path = slug_parts[2:]
-    agents_path = (
-        "/".join([*relative_path, "AGENTS.md"]) if relative_path else "AGENTS.md"
-    )
     default_branch = _get_github_default_branch(owner, repo)
+    agents_path = _resolve_agents_relative_path(
+        owner=owner,
+        repo=repo,
+        default_branch=default_branch,
+        relative_path=relative_path,
+    )
     return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{default_branch}/{agents_path}"
 
 

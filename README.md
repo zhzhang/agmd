@@ -1,4 +1,4 @@
-# am
+# `am` (A)GENTS.md (M)anager
 
 **am** manages `AGENTS.md` files for your project. It pulls agent instructions from GitHub repositories-shared skills, best practices, project conventions-and composes them into a single `AGENTS.md` alongside your local rules, which are given in `AGENTS.local.md` instead.
 
@@ -12,20 +12,6 @@ This allows you to easily maintain a set of local rules specific to your project
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/zhzhang/am/refs/heads/main/install.sh | sh
-```
-
-This installer does not require cloning the repository. It creates a virtual environment in `~/.local/share/am-cli`, installs `am` from GitHub, and links the executable at `~/.local/bin/am`.
-
-Optional overrides:
-
-```bash
-# Install location overrides
-AM_APP_DIR="$HOME/.am" AM_BIN_DIR="$HOME/bin" \
-  curl -sSL https://raw.githubusercontent.com/zhzhang/am/refs/heads/main/install.sh | sh
-
-# Source override (for tags, forks, or custom archives)
-AM_SOURCE_URL="https://github.com/zhzhang/am/archive/refs/tags/v0.1.0.tar.gz" \
-  curl -sSL https://raw.githubusercontent.com/zhzhang/am/refs/heads/main/install.sh | sh
 ```
 
 ### 2. Initialize your project
@@ -73,7 +59,6 @@ am sync
 ```
 
 `am` fetches the latest remote content, merges it with any `AGENTS.local.md`, and writes the result to `AGENTS.md`.
-
 
 ## Why?
 
