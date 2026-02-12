@@ -1,0 +1,1 @@
+When working on new commands and subcommands, put the logic and helper functions for each into its own separate file.
